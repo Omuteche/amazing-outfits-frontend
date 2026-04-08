@@ -29,7 +29,9 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <>
-        <Helmet><title>Cart | AmazingOutfits</title></Helmet>
+        <Helmet>
+          <title>Cart | AmazingOutfits</title>
+        </Helmet>
         <Layout>
           <div className="container mx-auto px-4 py-16 text-center">
             <ShoppingBag className="h-24 w-24 mx-auto text-muted-foreground mb-6" />
@@ -46,7 +48,9 @@ export default function CartPage() {
 
   return (
     <>
-      <Helmet><title>Cart ({itemCount}) | AmazingOutfits</title></Helmet>
+      <Helmet>
+        <title>{`Cart (${itemCount}) | AmazingOutfits`}</title>
+      </Helmet>
       <Layout>
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl md:text-4xl font-display tracking-wider mb-8">SHOPPING CART</h1>
@@ -143,3 +147,4 @@ export default function CartPage() {
     </>
   );
 }
+
