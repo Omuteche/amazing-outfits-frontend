@@ -1,0 +1,73 @@
+/* AuthSlider Custom Styles */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out forwards;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+}
+
+/* Glassmorphism effect for slider container */
+.slider-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced hover effects for navigation */
+.slider-nav-btn {
+  transition: all 0.3s ease;
+}
+
+.slider-nav-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+/* Dot indicators with glow effect */
+.slider-dot {
+  transition: all 0.3s ease;
+}
+
+.slider-dot.active {
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .slider-content {
+    padding: 2rem 1rem;
+  }
+
+  .slider-title {
+    font-size: 2rem;
+  }
+
+  .slider-subtitle {
+    font-size: 1.125rem;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .slider-glass {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
