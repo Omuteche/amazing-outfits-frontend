@@ -22,8 +22,10 @@ interface Product {
   price: number;
   salePrice?: number;
   stock: number;
-  categoryId?: string;
-  brandId?: string;
+    category?: { _id: string; name: string };
+    brand?: { _id: string; name: string };
+    categoryId?: string;
+    brandId?: string;
   images: string[];
   sizes?: string[];
   colors?: string[];
@@ -75,7 +77,8 @@ export default function AdminProducts() {
     setFormData({
       name: product.name, slug: product.slug, description: product.description || '',
       price: String(product.price), salePrice: product.salePrice ? String(product.salePrice) : '',
-      stock: String(product.stock), categoryId: product.categoryId || '', brandId: product.brandId || '',
+      stock: String(product.stock),
+      categoryId: product.category?._id || product.categoryId || '', brandId: product.brand?._id || product.brandId || '',
       images: product.images || [], sizes: product.sizes?.join(', ') || '', colors: product.colors?.join(', ') || '',
       isFeatured: product.isFeatured || false, isNewArrival: product.isNewArrival || false, isOnSale: product.isOnSale || false,
     });
@@ -91,8 +94,8 @@ export default function AdminProducts() {
       price: Number(formData.price),
       salePrice: formData.salePrice ? Number(formData.salePrice) : null,
       stock: Number(formData.stock),
-      categoryId: formData.categoryId || null,
-      brandId: formData.brandId || null,
+      category: formData.categoryId || null,
+      brand: formData.brandId || null,
       images: formData.images,
       sizes: formData.sizes ? formData.sizes.split(',').map(s => s.trim()) : [],
       colors: formData.colors ? formData.colors.split(',').map(s => s.trim()) : [],

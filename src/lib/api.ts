@@ -355,6 +355,11 @@ class ApiClient {
     return this.request<any>('/orders/all');
   }
 
+  // Reviews
+  async createReview(reviewData: { order: string; product: string; rating: number; comment?: string; isExitReview?: boolean }) {
+    return this.request<any>('/reviews', { method: 'POST', body: reviewData });
+  }
+
   // Admin Users
   async getAdminUsers() {
     return this.request<any>('/admin/users');
