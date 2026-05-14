@@ -6,6 +6,7 @@ import { Layout } from '@/components/layout/Layout';
 import { useCart } from '@/contexts/CartContext';
 import { formatKES } from '@/lib/formatCurrency';
 import { toast } from 'sonner';
+import { resolveImageUrl } from '@/lib/resolveImageUrl';
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, total, itemCount } = useCart();
@@ -56,14 +57,15 @@ export default function CartPage() {
 
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
-              {items.map(item => (
+              {items.map((item) => (
                 <div key={item.id} className="glass-card rounded-lg p-6">
-                  <div className="flex gap-4">
+                  <div className="flex gap-3">
                     <img
-                      src={item.image}
+                      src={resolveImageUrl(item.image)}
                       alt={item.name}
-                      className="w-24 h-24 object-cover rounded-lg"
+                      className="w-20 h-20 object-cover rounded-lg"
                     />
+
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg mb-2">{item.name}</h3>
                       <div className="text-sm text-muted-foreground space-y-1">
@@ -71,24 +73,30 @@ export default function CartPage() {
                         <p>Color: {item.color}</p>
                         <p>Price: {formatKES(item.salePrice ?? item.price)}</p>
                       </div>
-                      <div className="flex items-center gap-4 mt-4">
+
+                      <div className="flex items-center gap-3 mt-4">
                         <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
                             size="sm"
+                            className="min-h-11 min-w-11"
                             onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
+
                           <span className="w-8 text-center">{item.quantity}</span>
+
                           <Button
                             variant="outline"
                             size="sm"
+                            className="min-h-11 min-w-11"
                             onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
                         </div>
+
                         <Button
                           variant="outline"
                           size="sm"
@@ -99,6 +107,7 @@ export default function CartPage() {
                         </Button>
                       </div>
                     </div>
+
                     <div className="text-right">
                       <p className="font-semibold text-lg">
                         {formatKES((item.salePrice ?? item.price) * item.quantity)}
@@ -111,32 +120,29 @@ export default function CartPage() {
 
             <div className="glass-card rounded-lg p-6 h-fit sticky top-24">
               <h2 className="text-xl font-display tracking-wider mb-4">ORDER SUMMARY</h2>
+
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
                   <span>Items ({itemCount})</span>
                   <span>{formatKES(total)}</span>
                 </div>
+
                 <div className="flex justify-between">
                   <span>Shipping</span>
                   <span>FREE</span>
                 </div>
+
                 <div className="border-t border-border pt-2 flex justify-between text-lg font-bold">
                   <span>Total</span>
                   <span>{formatKES(total)}</span>
                 </div>
               </div>
-              <Button
-                className="w-full btn-neon"
-                size="lg"
-                onClick={() => navigate('/checkout')}
-              >
+
+              <Button className="w-full btn-neon" size="lg" onClick={() => navigate('/checkout')}>
                 PROCEED TO CHECKOUT
               </Button>
-              <Button
-                variant="outline"
-                className="w-full mt-4"
-                asChild
-              >
+
+              <Button variant="outline" className="w-full mt-4" asChild>
                 <Link to="/shop">CONTINUE SHOPPING</Link>
               </Button>
             </div>

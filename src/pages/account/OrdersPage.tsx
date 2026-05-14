@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Package, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Layout } from '@/components/layout/Layout';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatKES } from '@/lib/formatCurrency';
@@ -30,10 +32,17 @@ interface OrderItem {
 }
 
 export default function OrdersPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     if (user) fetchOrders();
@@ -61,36 +70,58 @@ export default function OrdersPage() {
     }
   };
 
-  if (loading) return <div className="glass-card rounded-lg p-6 animate-pulse">Loading orders...</div>;
-
-  if (orders.length === 0) {
+  if (authLoading || loading) {
     return (
-      <div className="glass-card rounded-lg p-8 text-center">
-        <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <h3 className="text-xl font-display tracking-wider mb-2">NO ORDERS YET</h3>
-        <p className="text-muted-foreground">Start shopping to see your orders here.</p>
-      </div>
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="glass-card rounded-lg p-6 animate-pulse">Loading orders...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="glass-card rounded-lg p-8 text-center">
+            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-xl font-display tracking-wider mb-2">SIGN IN TO VIEW ORDERS</h3>
+            <p className="text-muted-foreground">Please sign in to access your order history.</p>
+          </div>
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <>
-      <div className="space-y-4">
-        {orders.map(order => (
-          <div key={order._id} className="glass-card rounded-lg p-4">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <p className="font-semibold">{order.orderNumber}</p>
-                <p className="text-sm text-muted-foreground">{format(new Date(order.createdAt), 'MMM d, yyyy')}</p>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className={`px-3 py-1 rounded-full text-xs font-medium uppercase ${getStatusColor(order.status)}`}>{order.status}</span>
-                <span className="font-bold">{formatKES(order.total)}</span>
-                <Button variant="outline" size="sm" onClick={() => setSelectedOrder(order)}><Eye className="h-4 w-4 mr-1" /> View</Button>
-              </div>
-            </div>
+    <Layout>
+      <div className="container mx-auto px-4 py-8">
+        {orders.length === 0 ? (
+          <div className="glass-card rounded-lg p-8 text-center">
+            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-xl font-display tracking-wider mb-2">NO ORDERS YET</h3>
+            <p className="text-muted-foreground">Start shopping to see your orders here.</p>
           </div>
-        ))}
+        ) : (
+          <div className="space-y-4">
+            {orders.map(order => (
+              <div key={order._id} className="glass-card rounded-lg p-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <p className="font-semibold">{order.orderNumber}</p>
+                    <p className="text-sm text-muted-foreground">{format(new Date(order.createdAt), 'MMM d, yyyy')}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium uppercase ${getStatusColor(order.status)}`}>{order.status}</span>
+                    <span className="font-bold">{formatKES(order.total)}</span>
+                    <Button variant="outline" size="sm" onClick={() => setSelectedOrder(order)}><Eye className="h-4 w-4 mr-1" /> View</Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
         <DialogContent className="max-w-2xl">
@@ -128,6 +159,6 @@ export default function OrdersPage() {
           )}
         </DialogContent>
       </Dialog>
-    </>
+    </Layout>
   );
 }

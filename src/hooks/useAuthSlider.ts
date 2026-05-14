@@ -12,6 +12,7 @@ interface SliderItem {
   isActive?: boolean;
 }
 
+
 export const useAuthSlider = () => {
   const [slides, setSlides] = useState<SliderItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +36,9 @@ export const useAuthSlider = () => {
       const activeSlides = data.filter((slide: SliderItem) => slide.isActive !== false);
 
       // Sort by sortOrder
-      const sortedSlides = activeSlides.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+      const sortedSlides = activeSlides.sort((a: SliderItem, b: SliderItem) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+
 
       setSlides(sortedSlides);
     } catch (err) {

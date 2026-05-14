@@ -4,18 +4,8 @@ import { Button } from '@/components/ui/button';
 import { useAuthSlider } from '@/hooks/useAuthSlider';
 import './AuthSlider.css';
 
-interface SliderItem {
-  _id: string;
-  title: string;
-  subtitle?: string;
-  imageUrl: string;
-  buttonText?: string;
-  buttonLink?: string;
-  sortOrder?: number;
-  isActive?: boolean;
-}
-
 export default function AuthSlider() {
+
   const { slides, loading, error } = useAuthSlider();
   const [currentSlide, setCurrentSlide] = useState(0);
 

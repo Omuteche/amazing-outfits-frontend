@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
+import { motion } from 'framer-motion';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -53,6 +54,7 @@ export default function ShopPage() {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
   const [sortBy, setSortBy] = useState('newest');
+  const [showFloatingBar, setShowFloatingBar] = useState(false);
 
   useEffect(() => {
     fetchFiltersData();
@@ -62,6 +64,16 @@ export default function ShopPage() {
     fetchProducts();
     if (user) fetchWishlist();
   }, [searchParams, selectedCategories, selectedBrands, priceRange, sortBy, user]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setShowFloatingBar(scrollTop > 200); // Show after scrolling 200px
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const fetchFiltersData = async () => {
     try {
@@ -139,6 +151,12 @@ export default function ShopPage() {
   const FilterContent = () => (
     <div className="space-y-6">
       <div>
+        <h4 className="font-display text-3xl tracking-wider mb-3 relative">
+          FILTERS
+          <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"></div>
+        </h4>
+      </div>
+      <div>
         <h4 className="font-semibold mb-3">Categories</h4>
         <div className="space-y-2">
           {categories.map(cat => (
@@ -195,7 +213,10 @@ export default function ShopPage() {
           <div className="flex flex-col md:flex-row gap-8">
             <aside className="hidden md:block w-64 flex-shrink-0">
               <div className="sticky top-24 glass-card p-6 rounded-lg">
-                <h3 className="font-display text-xl tracking-wider mb-6">FILTERS</h3>
+                <h3 className="font-display text-3xl tracking-wider mb-6 relative">
+                  FILTERS
+                  <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"></div>
+                </h3>
                 <FilterContent />
               </div>
             </aside>
@@ -212,7 +233,7 @@ export default function ShopPage() {
                     <SheetTrigger asChild className="md:hidden">
                       <Button variant="outline" size="sm"><Filter className="h-4 w-4 mr-2" />Filters</Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="bg-background">
+<SheetContent side="left" className="bg-background overflow-y-auto">
                       <SheetHeader><SheetTitle className="font-display tracking-wider">FILTERS</SheetTitle></SheetHeader>
                       <div className="mt-6"><FilterContent /></div>
                     </SheetContent>
@@ -242,30 +263,95 @@ export default function ShopPage() {
                   <Button onClick={clearFilters} variant="outline">Clear Filters</Button>
                 </div>
               ) : (
-                <div className={viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6' : 'flex flex-col gap-4'}>
+                <motion.div
+                  className={viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6' : 'flex flex-col gap-4'}
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: {
+                        staggerChildren: 0.05,
+                      },
+                    },
+                  }}
+                >
                   {products.map(product => (
-                    <ProductCard
+                    <motion.div
                       key={product._id}
-                      product={{
-                        id: product._id,
-                        name: product.name,
-                        slug: product.slug,
-                        price: product.price,
-                        sale_price: product.salePrice,
-                        images: product.images,
-                        sizes: product.sizes,
-                        is_on_sale: product.isOnSale,
-                        is_new_arrival: product.isNewArrival,
-                        brands: product.brand,
+                      variants={{
+                        hidden: { opacity: 0, y: 20 },
+                        visible: { opacity: 1, y: 0 },
                       }}
-                      onWishlistToggle={toggleWishlist}
-                      isInWishlist={wishlist.includes(product._id)}
-                    />
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ProductCard
+                        product={{
+                          id: product._id,
+                          name: product.name,
+                          slug: product.slug,
+                          price: product.price,
+                          sale_price: product.salePrice,
+                          images: product.images,
+                          sizes: product.sizes,
+                          is_on_sale: product.isOnSale,
+                          is_new_arrival: product.isNewArrival,
+                          brands: product.brand,
+                        }}
+                        onWishlistToggle={toggleWishlist}
+                        isInWishlist={wishlist.includes(product._id)}
+                      />
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               )}
             </div>
           </div>
+
+          {/* Floating Sort & Filter Bar for Mobile */}
+          {showFloatingBar && (
+            <div className="fixed bottom-4 left-4 right-4 md:hidden z-50">
+              <div className="bg-card/95 backdrop-blur-md border border-border rounded-lg p-4 shadow-lg">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Filter className="h-4 w-4 mr-2" />
+                          Sort & Filter
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent side="bottom" className="bg-background h-96 overflow-y-auto">
+                        <SheetHeader>
+                          <SheetTitle className="font-display tracking-wider text-left">SORT & FILTER</SheetTitle>
+                        </SheetHeader>
+                        <div className="mt-6">
+                          <div className="mb-4">
+                            <Select value={sortBy} onValueChange={setSortBy}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Sort by" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="newest">Newest</SelectItem>
+                                <SelectItem value="price-low">Price: Low to High</SelectItem>
+                                <SelectItem value="price-high">Price: High to Low</SelectItem>
+                                <SelectItem value="name">Name</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <FilterContent />
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {products.length} products
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </Layout>
     </>

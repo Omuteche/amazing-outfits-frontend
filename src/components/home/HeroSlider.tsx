@@ -84,7 +84,16 @@ export function HeroSlider() {
   }
 
   return (
-    <div className="relative h-[60vh] md:h-[80vh] overflow-hidden">
+    <div className="relative h-[60vh] md:h-[80vh] overflow-hidden hero-grain">
+      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="noise">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/>
+            <feColorMatrix in="SourceGraphic" type="saturate" values="0"/>
+          </filter>
+        </defs>
+        <rect width="100%" height="100%" filter="url(#noise)"/>
+      </svg>
       {sliders.map((slider, index) => (
         <div
           key={slider._id}

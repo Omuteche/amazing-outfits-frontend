@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { CreditCard, Smartphone, Plus } from 'lucide-react';
+import { CreditCard, Smartphone } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,7 +35,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState('mpesa');
   const [loading, setLoading] = useState(false);
   const [phone, setPhone] = useState('');
-  const [showAddAddress, setShowAddAddress] = useState(false);
+
   const [addressForm, setAddressForm] = useState({ fullName: '', phone: '', addressLine1: '', addressLine2: '', city: '', county: '' });
 
   const shippingFee = total >= 5000 ? 0 : 300;
@@ -70,7 +71,7 @@ export default function CheckoutPage() {
       const newAddress = await api.createAddress(addressForm);
       toast.success('Address added');
       setAddressForm({ fullName: '', phone: '', addressLine1: '', addressLine2: '', city: '', county: '' });
-      setShowAddAddress(false);
+
       fetchAddresses();
       setSelectedAddress(newAddress._id);
     } catch (error) {
@@ -96,18 +97,29 @@ export default function CheckoutPage() {
     try {
       const orderData = {
         items: items.map(item => ({
+          // Backend Order model requires: product, quantity, price
           product: item.productId,
+          quantity: item.quantity,
+          price: item.salePrice ?? item.price,
+
+          // Extra fields are allowed by the Order schema (see backend/src/models/Order.js)
           productName: item.name,
           productImage: item.image,
-          price: item.salePrice ?? item.price,
-          quantity: item.quantity,
           size: item.size,
           color: item.color,
         })),
-        shippingAddress: address,
+        shippingAddress: {
+          fullName: address.fullName,
+          phone: address.phone,
+          addressLine1: address.addressLine1,
+          addressLine2: address.addressLine2,
+          city: address.city,
+          county: address.county,
+        },
         paymentMethod,
         notes: '',
       };
+
 
       const order = await api.createOrder(orderData);
 

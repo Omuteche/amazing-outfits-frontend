@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
 
 import api from '@/lib/api';
+import { resolveImageUrl } from '@/lib/resolveImageUrl';
+
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatKES } from '@/lib/formatCurrency';
@@ -156,7 +158,8 @@ export default function ProductPage() {
     );
   }
 
-  const images = product.images && product.images.length > 0 ? product.images : ['/placeholder.svg'];
+  const images = (product.images && product.images.length > 0 ? product.images : ['/placeholder.svg']).map(resolveImageUrl);
+
   const isOnSale = product.isOnSale && product.salePrice;
   const currentPrice = isOnSale ? product.salePrice! : product.price;
 
@@ -169,21 +172,27 @@ export default function ProductPage() {
       <Layout>
         <div className="container mx-auto px-4 py-8">
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-0">
+
               <div className="aspect-square overflow-hidden rounded-lg bg-secondary">
                 <img src={images[selectedImage]} alt={product.name} className="w-full h-full object-cover" />
               </div>
               {images.length > 1 && (
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-full min-w-0">
                   {images.map((img, index) => (
-                    <button key={index} onClick={() => setSelectedImage(index)} className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors ${index === selectedImage ? 'border-primary' : 'border-transparent'}`}>
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors ${index === selectedImage ? 'border-primary' : 'border-transparent'} min-w-0 max-w-full`}
+                    >
+                      <img src={img} alt="" className="w-full h-full max-w-full object-cover" />
                     </button>
                   ))}
                 </div>
               )}
             </div>
-            <div className="space-y-6">
+            <div className="space-y-6 min-w-0">
+
               {product.brand && <p className="text-sm text-muted-foreground uppercase tracking-wider">{product.brand.name}</p>}
               <h1 className="text-3xl md:text-4xl font-display tracking-wider">{product.name}</h1>
               <div className="flex items-center gap-4">
@@ -201,9 +210,16 @@ export default function ProductPage() {
               {product.sizes && product.sizes.length > 0 && (
                 <div>
                   <h3 className="font-semibold mb-3">Size</h3>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 min-w-0">
                     {product.sizes.map(size => (
-                      <button key={size} onClick={() => setSelectedSize(size)} className={`px-4 py-2 border rounded-lg transition-colors ${selectedSize === size ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary'}`}>{size}</button>
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => setSelectedSize(size)}
+                        className={`min-h-11 min-w-[44px] px-4 py-2 border rounded-lg transition-colors max-w-full ${selectedSize === size ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary'}`}
+                      >
+                        {size}
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -211,27 +227,35 @@ export default function ProductPage() {
               {product.colors && product.colors.length > 0 && (
                 <div>
                   <h3 className="font-semibold mb-3">Color</h3>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 min-w-0">
                     {product.colors.map(color => (
-                      <button key={color} onClick={() => setSelectedColor(color)} className={`px-4 py-2 border rounded-lg transition-colors ${selectedColor === color ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary'}`}>{color}</button>
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setSelectedColor(color)}
+                        className={`min-h-11 min-w-[44px] px-4 py-2 border rounded-lg transition-colors max-w-full ${selectedColor === color ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary'}`}
+                      >
+                        {color}
+                      </button>
                     ))}
                   </div>
                 </div>
               )}
               <div>
                 <h3 className="font-semibold mb-3">Quantity</h3>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center border border-border rounded-lg">
+                <div className="flex items-center gap-4 min-w-0 flex-wrap">
+                  <div className="flex items-center border border-border rounded-lg min-w-0">
                     <Button variant="ghost" size="icon" onClick={() => setQuantity(Math.max(1, quantity - 1))}><Minus className="h-4 w-4" /></Button>
-                    <span className="w-12 text-center font-semibold">{quantity}</span>
+                    <span className="w-12 text-center font-semibold max-w-full">{quantity}</span>
                     <Button variant="ghost" size="icon" onClick={() => setQuantity(quantity + 1)}><Plus className="h-4 w-4" /></Button>
                   </div>
                   <span className="text-sm text-muted-foreground">{product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}</span>
                 </div>
               </div>
-              <div className="flex gap-4">
+              <div className="flex gap-4 min-w-0 flex-wrap">
                 <Button className="flex-1 btn-neon" size="lg" onClick={handleAddToCart} disabled={product.stock === 0}>
                   <ShoppingBag className="mr-2 h-5 w-5" />Add to Cart
+
                 </Button>
                 <Button className="flex-1 btn-primary" size="lg" onClick={handleBuyNow} disabled={product.stock === 0}>
                   <CreditCard className="mr-2 h-5 w-5" />Proceed to Checkout

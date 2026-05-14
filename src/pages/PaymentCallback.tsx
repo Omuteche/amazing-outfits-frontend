@@ -30,9 +30,9 @@ export default function PaymentCallback() {
     try {
       const result = await api.verifyPayment(reference);
 
-      if (result.status === 'success') {
+      if (result.success) {
         setStatus('success');
-        setOrderNumber(result.orderNumber || result.metadata?.orderId || '');
+        setOrderNumber(result.orderNumber || result.data?.metadata?.orderId || '');
         clearCart(); // Clear cart after successful payment
         toast.success('Payment successful!');
       } else {

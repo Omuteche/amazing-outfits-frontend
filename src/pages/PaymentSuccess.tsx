@@ -15,34 +15,43 @@ export default function PaymentSuccess() {
   const [status, setStatus] = useState<'loading' | 'success' | 'failed'>('loading');
   const [orderNumber, setOrderNumber] = useState<string>('');
 
+
   useEffect(() => {
-    const reference = searchParams.get('reference') || searchParams.get('trxref');
-    if (reference) {
-      verifyPayment(reference);
-    } else {
+    console.log('PaymentSuccess: searchParams', Object.fromEntries(searchParams.entries()));
+    const reference = searchParams.get('reference');
+    const trxref = searchParams.get('trxref');
+
+    if (!reference && !trxref) {
+      console.log('PaymentSuccess: No reference found');
       setStatus('failed');
       toast.error('No payment reference found');
+      return;
     }
+
+    verifyPayment(reference || trxref!);
   }, [searchParams]);
 
   const verifyPayment = async (reference: string) => {
+    console.log('PaymentSuccess: Verifying payment with reference:', reference);
     try {
-      console.log('Verifying payment:', reference);
       const result = await api.verifyPayment(reference);
+      console.log('PaymentSuccess: Verification result:', result);
 
       if (result.success) {
         setStatus('success');
-        setOrderNumber(result.orderNumber || result.data?.metadata?.orderId || '');
+        setOrderNumber(result.orderNumber || '');
+
         clearCart();
-        toast.success('Payment verified successfully!');
+        toast.success('Payment successful and verified!');
+
       } else {
         setStatus('failed');
         toast.error(result.message || 'Payment verification failed');
       }
-    } catch (error) {
-      console.error('Payment verification error:', error);
+    } catch (error: any) {
+      console.error('PaymentSuccess: Payment verification error:', error);
       setStatus('failed');
-      toast.error('Payment verification failed');
+      toast.error(error.message || 'Payment verification failed');
     }
   };
 

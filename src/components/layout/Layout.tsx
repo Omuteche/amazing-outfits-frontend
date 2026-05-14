@@ -2,6 +2,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import WhatsAppSupport from '../WhatsAppSupport';
+import { Marquee } from '../Marquee';
 import { useAuth } from '@/contexts/AuthContext';
 import ExitReviewPopup from '../ExitReviewPopup';
 
@@ -62,6 +63,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Marquee />
       <Header />
       <main className="flex-1">
         {children}

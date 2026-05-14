@@ -97,36 +97,38 @@ export function Header() {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
-            <Button
+<div className="flex items-center gap-3">
+<Button
               variant="ghost"
               size="icon"
+              className="min-h-11 min-w-11"
               onClick={toggleTheme}
             >
               {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             </Button>
-            <Button
+<Button
               variant="ghost"
               size="icon"
+              className="min-h-11 min-w-11"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
               <Search className="h-5 w-5" />
             </Button>
             
             <Link to={user ? '/account/wishlist' : '/auth'}>
-              <Button variant="ghost" size="icon">
+<Button variant="ghost" size="icon" className="min-h-11 min-w-11">
                 <Heart className="h-5 w-5" />
               </Button>
             </Link>
             
             <Link to={user ? '/account' : '/auth'}>
-              <Button variant="ghost" size="icon">
+<Button variant="ghost" size="icon" className="min-h-11 min-w-11">
                 <User className="h-5 w-5" />
               </Button>
             </Link>
             
             <Link to="/cart" className="relative">
-              <Button variant="ghost" size="icon">
+<Button variant="ghost" size="icon" className="min-h-11 min-w-11">
                 <ShoppingBag className="h-5 w-5" />
                 {itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
@@ -139,8 +141,9 @@ export function Header() {
         </div>
 
         {/* Search Bar */}
-        {isSearchOpen && (
+{isSearchOpen && (
           <div className="pb-4 animate-fade-in">
+            <div className="sr-only">Search</div>
             <form onSubmit={handleSearch} className="flex gap-2">
               <Input
                 placeholder="Search for shoes..."

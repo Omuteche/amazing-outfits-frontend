@@ -95,12 +95,15 @@ class ApiClient {
     return this.request<any>('/auth/profile');
   }
 
+
   async updateProfile(data: { fullName?: string; phone?: string }) {
+
     return this.request<any>('/auth/profile', {
-      method: 'PUT',
+      method: 'PATCH',
       body: data,
     });
   }
+
 
   logout() {
     this.clearAuthToken();
@@ -190,9 +193,10 @@ class ApiClient {
 
   // Sliders
   async getSliders(activeOnly = false) {
-    const query = activeOnly ? '?active=true' : '';
+    const query = activeOnly ? '?all=true' : '';
     return this.request<any>(`/sliders${query}`);
   }
+
 
   async createSlider(data: any) {
     return this.request<any>('/sliders', { method: 'POST', body: data });
@@ -221,8 +225,9 @@ class ApiClient {
   }
 
   async updateBlogPost(id: string, data: any) {
-    return this.request<any>(`/blog/${id}`, { method: 'PUT', body: data });
+    return this.request<any>(`/blog/${id}`, { method: 'PATCH', body: data });
   }
+
 
   async deleteBlogPost(id: string) {
     return this.request<any>(`/blog/${id}`, { method: 'DELETE' });
