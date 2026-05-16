@@ -10,7 +10,9 @@ interface Brand {
 }
 
 export function BrandShowcase() {
-  const { data: brands = [], isLoading } = useBrands();
+  const brandsQuery = useBrands();
+  const brands = (brandsQuery.data ?? []) as Brand[];
+  const isLoading = brandsQuery.isLoading;
   const displayBrands = brands.slice(0, 8);
 
   const resolveImageUrl = (url?: string) => {
@@ -50,7 +52,7 @@ export function BrandShowcase() {
         </h2>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {displayBrands.map((brand) => (
+          {displayBrands.map((brand: Brand) => (
             <Link
               key={brand._id}
               to={`/shop?brand=${brand.slug}`}

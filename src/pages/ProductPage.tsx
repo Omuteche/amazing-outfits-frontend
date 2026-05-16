@@ -42,7 +42,9 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
 
   // React Query hooks
-  const { data: product, isLoading } = useProduct(slug || '');
+  const productQuery = useProduct(slug || '');
+  const product = productQuery.data as Product | undefined;
+  const isLoading = productQuery.isLoading;
   const { data: wishlistData = [] } = useWishlist();
   const addToWishlistMutation = useAddToWishlist();
   const removeFromWishlistMutation = useRemoveFromWishlist();
@@ -159,7 +161,7 @@ export default function ProductPage() {
               </div>
               {images.length > 1 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-full min-w-0">
-                  {images.map((img, index) => (
+                  {images.map((img: string, index: number) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
@@ -191,7 +193,7 @@ export default function ProductPage() {
                 <div>
                   <h3 className="font-semibold mb-3">Size</h3>
                   <div className="flex flex-wrap gap-2 min-w-0">
-                    {product.sizes.map(size => (
+                    {product.sizes.map((size: string) => (
                       <button
                         key={size}
                         type="button"
@@ -208,7 +210,7 @@ export default function ProductPage() {
                 <div>
                   <h3 className="font-semibold mb-3">Color</h3>
                   <div className="flex flex-wrap gap-2 min-w-0">
-                    {product.colors.map(color => (
+                    {product.colors.map((color: string) => (
                       <button
                         key={color}
                         type="button"
