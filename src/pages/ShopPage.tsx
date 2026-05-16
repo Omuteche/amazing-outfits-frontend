@@ -10,10 +10,10 @@ import { Slider } from '@/components/ui/slider';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
 import { motion } from 'framer-motion';
-import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { formatKES } from '@/lib/formatCurrency';
+import { useCategories, useBrands, useProducts, useWishlist, useAddToWishlist, useRemoveFromWishlist } from '@/lib/queryHooks';
 
 interface Product {
   _id: string;
@@ -42,11 +42,6 @@ interface Brand {
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [wishlist, setWishlist] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const { user } = useAuth();
 
@@ -56,69 +51,42 @@ export default function ShopPage() {
   const [sortBy, setSortBy] = useState('newest');
   const [showFloatingBar, setShowFloatingBar] = useState(false);
 
-  useEffect(() => {
-    fetchFiltersData();
-  }, []);
+  // React Query hooks
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+  const { data: brands = [], isLoading: brandsLoading } = useBrands();
+  
+  const params: Record<string, string> = {};
+  const search = searchParams.get('search');
+  const filter = searchParams.get('filter');
+  const category = searchParams.get('category');
+  const brand = searchParams.get('brand');
 
-  useEffect(() => {
-    fetchProducts();
-    if (user) fetchWishlist();
-  }, [searchParams, selectedCategories, selectedBrands, priceRange, sortBy, user]);
+  if (search) params.search = search;
+  if (filter === 'new') params.newArrival = 'true';
+  if (filter === 'sale') params.onSale = 'true';
+  if (category) params.category = category;
+  if (brand) params.brand = brand;
+  if (sortBy) params.sort = sortBy;
+
+  const { data: productsData, isLoading: productsLoading } = useProducts(params);
+  const { data: wishlistData = [], isLoading: wishlistLoading } = useWishlist();
+  
+  const addToWishlistMutation = useAddToWishlist();
+  const removeFromWishlistMutation = useRemoveFromWishlist();
+
+  const products = productsData?.products || productsData || [];
+  const wishlist = wishlistData.map((w: any) => w.product?._id || w.productId) || [];
+  const loading = categoriesLoading || brandsLoading || productsLoading || wishlistLoading;
 
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
-      setShowFloatingBar(scrollTop > 200); // Show after scrolling 200px
+      setShowFloatingBar(scrollTop > 200);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const fetchFiltersData = async () => {
-    try {
-      const [cats, brs] = await Promise.all([api.getCategories(), api.getBrands()]);
-      setCategories(cats || []);
-      setBrands(brs || []);
-    } catch (error) {
-      console.error('Failed to fetch filters:', error);
-    }
-  };
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const params: Record<string, string> = {};
-      const search = searchParams.get('search');
-      const filter = searchParams.get('filter');
-      const category = searchParams.get('category');
-      const brand = searchParams.get('brand');
-
-      if (search) params.search = search;
-      if (filter === 'new') params.newArrival = 'true';
-      if (filter === 'sale') params.onSale = 'true';
-      if (category) params.category = category;
-      if (brand) params.brand = brand;
-      if (sortBy) params.sort = sortBy;
-
-      const data = await api.getProducts(params);
-      setProducts(data.products || data || []);
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchWishlist = async () => {
-    if (!user) return;
-    try {
-      const data = await api.getWishlist();
-      setWishlist(data.map((w: any) => w.product?._id || w.productId) || []);
-    } catch (error) {
-      console.error('Failed to fetch wishlist:', error);
-    }
-  };
 
   const toggleWishlist = async (productId: string) => {
     if (!user) {
@@ -128,13 +96,9 @@ export default function ShopPage() {
     const isInWishlist = wishlist.includes(productId);
     try {
       if (isInWishlist) {
-        await api.removeFromWishlist(productId);
-        setWishlist(wishlist.filter(id => id !== productId));
-        toast.success('Removed from wishlist');
+        await removeFromWishlistMutation.mutateAsync(productId);
       } else {
-        await api.addToWishlist(productId);
-        setWishlist([...wishlist, productId]);
-        toast.success('Added to wishlist');
+        await addToWishlistMutation.mutateAsync(productId);
       }
     } catch (error) {
       toast.error('Failed to update wishlist');

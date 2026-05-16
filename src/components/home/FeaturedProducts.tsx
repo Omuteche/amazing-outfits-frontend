@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/products/ProductCard';
-import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useProducts, useWishlist, useAddToWishlist, useRemoveFromWishlist } from '@/lib/queryHooks';
 
 interface Product {
   _id: string;
@@ -27,43 +26,20 @@ interface FeaturedProductsProps {
 }
 
 export function FeaturedProducts({ title, filter }: FeaturedProductsProps) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [wishlist, setWishlist] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchProducts();
-    if (user) {
-      fetchWishlist();
-    }
-  }, [user]);
+  const params: Record<string, string> = { limit: '8' };
+  if (filter === 'featured') params.featured = 'true';
+  else if (filter === 'new') params.newArrival = 'true';
+  else if (filter === 'sale') params.onSale = 'true';
 
-  const fetchProducts = async () => {
-    try {
-      const params: Record<string, string> = { limit: '8' };
-      if (filter === 'featured') params.featured = 'true';
-      else if (filter === 'new') params.newArrival = 'true';
-      else if (filter === 'sale') params.onSale = 'true';
+  const { data: productsData, isLoading } = useProducts(params);
+  const { data: wishlistData = [] } = useWishlist();
+  const addToWishlistMutation = useAddToWishlist();
+  const removeFromWishlistMutation = useRemoveFromWishlist();
 
-      const data = await api.getProducts(params);
-      setProducts(data.products || data || []);
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchWishlist = async () => {
-    if (!user) return;
-    try {
-      const data = await api.getWishlist();
-      setWishlist(data?.map((w: any) => w.product?._id || w.productId) || []);
-    } catch (error) {
-      console.error('Failed to fetch wishlist:', error);
-    }
-  };
+  const products = productsData?.products || productsData || [];
+  const wishlist = wishlistData.map((w: any) => w.product?._id || w.productId) || [];
 
   const toggleWishlist = async (productId: string) => {
     if (!user) {
@@ -75,13 +51,9 @@ export function FeaturedProducts({ title, filter }: FeaturedProductsProps) {
 
     try {
       if (isInWishlist) {
-        await api.removeFromWishlist(productId);
-        setWishlist(wishlist.filter(id => id !== productId));
-        toast.success('Removed from wishlist');
+        await removeFromWishlistMutation.mutateAsync(productId);
       } else {
-        await api.addToWishlist(productId);
-        setWishlist([...wishlist, productId]);
-        toast.success('Added to wishlist');
+        await addToWishlistMutation.mutateAsync(productId);
       }
     } catch (error) {
       toast.error('Failed to update wishlist');
@@ -94,7 +66,7 @@ export function FeaturedProducts({ title, filter }: FeaturedProductsProps) {
     return '/shop';
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">

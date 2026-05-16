@@ -5,13 +5,13 @@ import { Heart, Minus, Plus, ShoppingBag, Truck, RotateCcw, Shield, CreditCard }
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
 
-import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/resolveImageUrl';
 
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatKES } from '@/lib/formatCurrency';
 import { toast } from 'sonner';
+import { useProduct, useWishlist, useAddToWishlist, useRemoveFromWishlist } from '@/lib/queryHooks';
 
 interface Product {
   _id: string;
@@ -36,41 +36,25 @@ export default function ProductPage() {
   const { addItem, clearCart } = useCart();
   const { user } = useAuth();
   
-  const [product, setProduct] = useState<Product | null>(null);
-
-  const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
-  const [isInWishlist, setIsInWishlist] = useState(false);
+
+  // React Query hooks
+  const { data: product, isLoading } = useProduct(slug || '');
+  const { data: wishlistData = [] } = useWishlist();
+  const addToWishlistMutation = useAddToWishlist();
+  const removeFromWishlistMutation = useRemoveFromWishlist();
+
+  const wishlist = wishlistData.map((w: any) => w.product?._id || w.productId) || [];
+  const isInWishlist = product ? wishlist.includes(product._id) : false;
 
   useEffect(() => {
-    if (slug) fetchProduct();
-  }, [slug]);
-
-  const fetchProduct = async () => {
-    setLoading(true);
-    try {
-      const data = await api.getProduct(slug!);
-      if (!data) {
-        navigate('/shop');
-        return;
-      }
-      setProduct(data);
-      
-      if (user) {
-        try {
-          const wishlistData = await api.getWishlist();
-          setIsInWishlist(wishlistData.some((w: any) => (w.product?._id || w.productId) === data._id));
-        } catch {}
-      }
-    } catch (error) {
+    if (!product && !isLoading) {
       navigate('/shop');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [product, isLoading, navigate]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -128,20 +112,16 @@ export default function ProductPage() {
     if (!product) return;
     try {
       if (isInWishlist) {
-        await api.removeFromWishlist(product._id);
-        setIsInWishlist(false);
-        toast.success('Removed from wishlist');
+        await removeFromWishlistMutation.mutateAsync(product._id);
       } else {
-        await api.addToWishlist(product._id);
-        setIsInWishlist(true);
-        toast.success('Added to wishlist');
+        await addToWishlistMutation.mutateAsync(product._id);
       }
     } catch {
       toast.error('Failed to update wishlist');
     }
   };
 
-  if (loading || !product) {
+  if (isLoading || !product) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8">

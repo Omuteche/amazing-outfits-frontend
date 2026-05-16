@@ -35,7 +35,19 @@ import PaymentCallback from "./pages/PaymentCallback";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import ShippingInfoPage from "./pages/ShippingInfoPage";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes default
+      gcTime: 1000 * 60 * 10, // 10 minutes cache time (formerly cacheTime)
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
   <HelmetProvider>

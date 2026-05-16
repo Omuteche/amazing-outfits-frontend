@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import api from '@/lib/api';
+import { useSliders } from '@/lib/queryHooks';
 
 interface Slider {
   _id: string;
@@ -16,13 +16,8 @@ interface Slider {
 }
 
 export function HeroSlider() {
-  const [sliders, setSliders] = useState<Slider[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchSliders();
-  }, []);
+  const { data: sliders = [], isLoading } = useSliders(true);
 
   useEffect(() => {
     if (sliders.length <= 1) return;
@@ -31,17 +26,6 @@ export function HeroSlider() {
     }, 5000);
     return () => clearInterval(interval);
   }, [sliders.length]);
-
-  const fetchSliders = async () => {
-    try {
-      const data = await api.getSliders(true);
-      setSliders(data || []);
-    } catch (error) {
-      console.error('Failed to fetch sliders:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
@@ -55,7 +39,7 @@ export function HeroSlider() {
     setCurrentSlide((prev) => (prev + 1) % sliders.length);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="h-[60vh] md:h-[80vh] bg-secondary animate-pulse flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>

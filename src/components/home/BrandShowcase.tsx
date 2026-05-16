@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '@/lib/api';
+import { useBrands } from '@/lib/queryHooks';
 
 interface Brand {
   _id: string;
@@ -11,23 +10,8 @@ interface Brand {
 }
 
 export function BrandShowcase() {
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchBrands();
-  }, []);
-
-  const fetchBrands = async () => {
-    try {
-      const data = await api.getBrands();
-      setBrands((data || []).slice(0, 8));
-    } catch (error) {
-      console.error('Failed to fetch brands:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: brands = [], isLoading } = useBrands();
+  const displayBrands = brands.slice(0, 8);
 
   const resolveImageUrl = (url?: string) => {
     if (!url) return '';
@@ -37,7 +21,7 @@ export function BrandShowcase() {
     return base + (url.startsWith('/') ? '' : '/') + url;
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
@@ -54,7 +38,7 @@ export function BrandShowcase() {
     );
   }
 
-  if (brands.length === 0) {
+  if (displayBrands.length === 0) {
     return null;
   }
 
@@ -66,7 +50,7 @@ export function BrandShowcase() {
         </h2>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {brands.map((brand) => (
+          {displayBrands.map((brand) => (
             <Link
               key={brand._id}
               to={`/shop?brand=${brand.slug}`}

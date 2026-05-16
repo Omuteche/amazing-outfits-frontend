@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '@/lib/api';
+import { useCategories } from '@/lib/queryHooks';
 
 interface Category {
   _id: string;
@@ -11,25 +10,10 @@ interface Category {
 }
 
 export function CategoryGrid() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: categories = [], isLoading } = useCategories();
+  const displayCategories = categories.slice(0, 6);
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const data = await api.getCategories();
-      setCategories((data || []).slice(0, 6));
-    } catch (error) {
-      console.error('Failed to fetch categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <section className="py-12 md:py-16 bg-secondary/50">
         <div className="container mx-auto px-4">
@@ -46,7 +30,7 @@ export function CategoryGrid() {
     );
   }
 
-  if (categories.length === 0) {
+  if (displayCategories.length === 0) {
     return null;
   }
 
@@ -58,7 +42,7 @@ export function CategoryGrid() {
         </h2>
         
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-          {categories.map((category) => (
+          {displayCategories.map((category) => (
             <Link
               key={category._id}
               to={`/shop?category=${category.slug}`}
