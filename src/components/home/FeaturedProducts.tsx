@@ -33,12 +33,14 @@ export function FeaturedProducts({ title, filter }: FeaturedProductsProps) {
   else if (filter === 'new') params.newArrival = 'true';
   else if (filter === 'sale') params.onSale = 'true';
 
-  const { data: productsData, isLoading } = useProducts(params);
+  const productsQuery = useProducts(params);
+  const productsData = productsQuery.data;
+  const isLoading = productsQuery.isLoading;
   const { data: wishlistData = [] } = useWishlist();
   const addToWishlistMutation = useAddToWishlist();
   const removeFromWishlistMutation = useRemoveFromWishlist();
 
-  const products = productsData?.products || productsData || [];
+  const products = (productsData?.products || productsData || []) as Product[];
   const wishlist = wishlistData.map((w: any) => w.product?._id || w.productId) || [];
 
   const toggleWishlist = async (productId: string) => {
@@ -101,7 +103,7 @@ export function FeaturedProducts({ title, filter }: FeaturedProductsProps) {
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {products.map((product) => (
+          {products.map((product: Product) => (
             <ProductCard
               key={product._id}
               product={{

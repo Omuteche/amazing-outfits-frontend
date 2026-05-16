@@ -10,7 +10,9 @@ interface Category {
 }
 
 export function CategoryGrid() {
-  const { data: categories = [], isLoading } = useCategories();
+  const categoriesQuery = useCategories();
+  const categories = (categoriesQuery.data ?? []) as Category[];
+  const isLoading = categoriesQuery.isLoading;
   const displayCategories = categories.slice(0, 6);
 
   if (isLoading) {
@@ -42,7 +44,7 @@ export function CategoryGrid() {
         </h2>
         
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-          {displayCategories.map((category) => (
+          {displayCategories.map((category: Category) => (
             <Link
               key={category._id}
               to={`/shop?category=${category.slug}`}

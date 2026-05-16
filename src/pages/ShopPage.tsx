@@ -52,8 +52,12 @@ export default function ShopPage() {
   const [showFloatingBar, setShowFloatingBar] = useState(false);
 
   // React Query hooks
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
-  const { data: brands = [], isLoading: brandsLoading } = useBrands();
+  const categoriesQuery = useCategories();
+  const categories = (categoriesQuery.data ?? []) as Category[];
+  const categoriesLoading = categoriesQuery.isLoading;
+  const brandsQuery = useBrands();
+  const brands = (brandsQuery.data ?? []) as Brand[];
+  const brandsLoading = brandsQuery.isLoading;
   
   const params: Record<string, string> = {};
   const search = searchParams.get('search');
@@ -68,13 +72,15 @@ export default function ShopPage() {
   if (brand) params.brand = brand;
   if (sortBy) params.sort = sortBy;
 
-  const { data: productsData, isLoading: productsLoading } = useProducts(params);
+  const productsQuery = useProducts(params);
+  const productsData = productsQuery.data;
+  const productsLoading = productsQuery.isLoading;
   const { data: wishlistData = [], isLoading: wishlistLoading } = useWishlist();
   
   const addToWishlistMutation = useAddToWishlist();
   const removeFromWishlistMutation = useRemoveFromWishlist();
 
-  const products = productsData?.products || productsData || [];
+  const products = (productsData?.products || productsData || []) as Product[];
   const wishlist = wishlistData.map((w: any) => w.product?._id || w.productId) || [];
   const loading = categoriesLoading || brandsLoading || productsLoading || wishlistLoading;
 
@@ -123,7 +129,7 @@ export default function ShopPage() {
       <div>
         <h4 className="font-semibold mb-3">Categories</h4>
         <div className="space-y-2">
-          {categories.map(cat => (
+          {categories.map((cat: Category) => (
             <label key={cat._id} className="flex items-center gap-2 cursor-pointer">
               <Checkbox
                 checked={selectedCategories.includes(cat._id)}
@@ -140,7 +146,7 @@ export default function ShopPage() {
       <div>
         <h4 className="font-semibold mb-3">Brands</h4>
         <div className="space-y-2">
-          {brands.map(brand => (
+          {brands.map((brand: Brand) => (
             <label key={brand._id} className="flex items-center gap-2 cursor-pointer">
               <Checkbox
                 checked={selectedBrands.includes(brand._id)}
@@ -241,7 +247,7 @@ export default function ShopPage() {
                     },
                   }}
                 >
-                  {products.map(product => (
+                  {products.map((product: Product) => (
                     <motion.div
                       key={product._id}
                       variants={{

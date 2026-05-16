@@ -17,7 +17,9 @@ interface Slider {
 
 export function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { data: sliders = [], isLoading } = useSliders(true);
+  const slidersQuery = useSliders(true);
+  const sliders = (slidersQuery.data ?? []) as Slider[];
+  const isLoading = slidersQuery.isLoading;
 
   useEffect(() => {
     if (sliders.length <= 1) return;
@@ -78,7 +80,7 @@ export function HeroSlider() {
         </defs>
         <rect width="100%" height="100%" filter="url(#noise)"/>
       </svg>
-      {sliders.map((slider, index) => (
+      {sliders.map((slider: Slider, index: number) => (
         <div
           key={slider._id}
           className={`absolute inset-0 transition-opacity duration-700 ${
@@ -139,7 +141,7 @@ export function HeroSlider() {
       {/* Dots */}
       {sliders.length > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-          {sliders.map((_, index) => (
+          {sliders.map((_: Slider, index: number) => (
             <button
               key={index}
               className={`w-3 h-3 rounded-full transition-all ${
